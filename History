@@ -1,0 +1,107 @@
+History of Configuration:
+
+sudo apt-get update
+
+sudo apt-get install -y apache2
+
+sudo apt-get install -y php7.2 php7.2-xml php7.2-common php7.2-cli php7.2-fpm php7.2-json php7.2-opcache php7.2-readline libapache2-mod-php7.2 php7.2-dev php7.2-curl php7.2-intl php7.2-mbstring php7.2-zip
+
+sudo apt-get install -y alien wget
+
+sudo mkdir /downloads
+sudo chmod -R 777 /downloads/
+
+cd /downloads
+
+sudo wget -nv https://github.com/jhoemrs/oci8php/raw/master/oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+sudo wget -nv https://github.com/jhoemrs/oci8php/raw/master/oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+sudo wget -nv https://github.com/jhoemrs/oci8php/raw/master/oracle-instantclient19.6-sqlplus-19.6.0.0.0-1.x86_64.rpm
+
+sudo alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+sudo alien -i oracle-instantclient19.6-sqlplus-19.6.0.0.0-1.x86_64.rpm
+sudo alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+
+sudo apt-get install -y libaio1
+
+sudo touch /etc/ld.so.conf.d/oracle.conf
+sudo sh -c 'echo "/usr/lib/oracle/19.6/client64/lib" >> /etc/ld.so.conf.d/oracle.conf'
+cd ~
+
+sudo ldconfig
+
+export ORACLE_HOME=/usr/lib/oracle/19.6/client64/
+
+cd /downloads/
+
+pecl download OCI8
+
+tar zxvf oci8-*
+
+cd oci8-2.2.0/
+
+phpize
+
+./configure --with-oci8=instantclient,/usr/lib/oracle/19.6/client64/lib
+
+sudo make install
+
+sudo touch /etc/php/7.2/mods-available/oci8.ini
+sudo sh -c 'echo "extension=oci8.so" >> /etc/php/7.2/mods-available/oci8.ini'
+sudo ln -s /etc/php/7.2/mods-available/oci8.ini /etc/php/7.2/apache2/conf.d/oci8.ini
+
+
+cd /downloads/
+
+wget -nv http://th1.php.net/distributions/php-7.2.24.tar.gz
+
+tar xzvf php-7.2.24.tar.gz
+cd php7.2.24/ext/pdo_oci
+phpize
+./configure --with-pdo-oci=instantclient,/usr/lib/oracle/19.6/client64/lib
+sudo make install
+
+sudo touch /etc/php/7.2/mods-available/pdo_oci.ini
+sudo sh -c 'echo "extension=pdo_oci.so" >> /etc/php/7.2/mods-available/pdo_oci.ini'
+sudo ln -s /etc/php/7.2/mods-available/pdo_oci.ini /etc/php/7.2/apache2/conf.d/pdo_oci.ini
+
+
+---- 
+
+#STEP 2 - SYMFONY
+sudo rm -rf /downloads/
+
+sudo mkdir /downloads
+
+cd /downloads/
+
+sudo chmod -R 777 /downloads/
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+
+php composer-setup.php
+
+php -r "unlink('composer-setup.php');"
+
+sudo chmod +x composer.phar
+
+sudo mv composer.phar /bin/composer
+
+wget https://get.symfony.com/cli/installer -O - | bash
+
+sudo mv /home/vagrant/.symfony/bin/symfony /usr/local/bin/symfony
+
+sudo rm -rf /downloads/
+
+cd ~
+
+git config --global user.email "jhoemrs@gmail.com"
+git config --global user.name "Jhoe"
+
+
+mkdir ~/projetos/
+cd ~/projetos
+mkdir symfony
+
+symfony new --full helloworld
